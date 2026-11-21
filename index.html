@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Zet je MusicMeter-stemmen en -toevoegingen om in een jaarverslag per jaar en per maand.">
+<title>MusicMeter Jaaroverzicht</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: één kolom; bovenaan de drie stappen (knop, ophalen, plakken), daaronder het jaarverslag van de geplakte gebruiker */
+:root{--bg:#f4f5f3;--card:#ffffff;--fg:#1b1f1e;--muted:#5d6663;--line:#dde2df;--acc:#1f6a6f;--acc2:#8a4b2a;--soft:#e3efee;--warn:#fff4e5;--warnline:#e6b877;
+--h0:#eef3f2;--h1:#c9e0de;--h2:#93c3c0;--h3:#56a1a0;--h4:#1f6a6f;
+--font-display:"Space Grotesk",system-ui,sans-serif;--font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141817;--card:#1d2221;--fg:#e8ecea;--muted:#a1aaa7;--line:#323937;--acc:#6cc3c7;--acc2:#e09a6e;--soft:#22302f;--warn:#2e2618;--warnline:#7a5a2a;--h0:#1f2625;--h1:#24423f;--h2:#2f6662;--h3:#4a9a96;--h4:#8fdade;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141817;--card:#1d2221;--fg:#e8ecea;--muted:#a1aaa7;--line:#323937;--acc:#6cc3c7;--acc2:#e09a6e;--soft:#22302f;--warn:#2e2618;--warnline:#7a5a2a;--h0:#1f2625;--h1:#24423f;--h2:#2f6662;--h3:#4a9a96;--h4:#8fdade;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--font-body);padding-block:8px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-family:var(--font-display);font-weight:600;font-size:30px;margin:18px 0 4px;text-wrap:balance}
+h2{font-family:var(--font-display);font-weight:600;font-size:19px;margin:0 0 4px;text-wrap:balance}
+h3{font-family:var(--font-display);font-weight:600;font-size:15px;margin:0 0 8px}
+p{margin:0}
+.sub,.uitleg{color:var(--muted);font-size:14px;max-width:72ch}
+a{color:var(--acc)}
+a:focus-visible,button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.stappen{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr));gap:12px;margin-top:14px}
+.stap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.stap h3{margin:0;display:flex;gap:8px;align-items:baseline}
+.stap h3 span{font-family:var(--font-display);color:var(--acc);font-size:13px;letter-spacing:.04em}
+.stap p{font-size:14px;color:var(--muted)}
+.bm{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font:600 14px var(--font-body);background:var(--acc);color:var(--card);text-decoration:none;border-radius:999px;padding:8px 16px;cursor:grab;border:2px dashed transparent}
+.bm:hover{border-color:var(--fg)}
+.knop{font:500 13px var(--font-body);background:var(--card);color:var(--acc);border:1px solid var(--acc);border-radius:8px;padding:5px 11px;cursor:pointer;align-self:flex-start}
+.knop.vol{background:var(--acc);color:var(--card)}
+.rij{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+textarea{width:100%;box-sizing:border-box;min-height:70px;font:12px ui-monospace,Consolas,monospace;background:var(--bg);color:var(--fg);border:1px dashed var(--line);border-radius:8px;padding:8px;resize:vertical}
+.drop{border-color:var(--acc)}
+.melding{font-size:13px;color:var(--muted);min-height:1.4em}
+.melding.fout{color:var(--acc2)}
+.band{background:var(--warn);border:1px solid var(--warnline);border-radius:10px;padding:8px 12px;font-size:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi b{display:block;font-family:var(--font-display);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi span{font-size:12px;color:var(--muted)}
+.paneel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.scroll{overflow-x:auto}
+.cols{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(26px,1fr);gap:3px;align-items:end;height:170px;min-width:640px}
+.col{display:flex;flex-direction:column;justify-content:flex-end;height:100%;background:none;border:0;padding:0;cursor:pointer;color:var(--muted);font:11px var(--font-body)}
+.col u{text-decoration:none;text-align:center;font-size:11px;line-height:14px;height:14px;color:var(--fg);font-variant-numeric:tabular-nums}
+.col i{display:block;border-radius:4px 4px 0 0;min-height:1px}
+.col em{font-style:normal;text-align:center;height:16px;line-height:16px;margin-top:3px;font-variant-numeric:tabular-nums}
+.col.v i{background:var(--acc)} .col.a i{background:var(--acc2)}
+.col[aria-pressed="true"] em{color:var(--fg);font-weight:600}
+.col:not([aria-pressed="true"]).dim i{opacity:.35}
+.lijn{min-width:640px}
+.lijn svg{display:block;width:100%;height:150px}
+.hm{display:grid;grid-template-columns:44px repeat(12,minmax(22px,1fr));gap:2px;font-size:11px;min-width:520px}
+.hm span{text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.hm .c{height:20px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent}
+.hm .c:hover{color:var(--fg);outline:1px solid var(--fg)}
+.hm .y{text-align:right;padding-right:6px}
+.schaal{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.schaal i{width:18px;height:10px;border-radius:2px;display:inline-block}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px}
+.hb{display:grid;grid-template-columns:minmax(0,140px) minmax(0,1fr) 48px;gap:5px 8px;align-items:center;font-size:13px}
+.hb span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .bar{height:10px;background:var(--soft);border-radius:4px;overflow:hidden}
+.hb .bar i{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--acc)}
+.hb.a .bar i{background:var(--acc2)}
+.hb .w{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.hb .leeg{grid-column:1/-1;color:var(--muted);font-size:13px}
+.jaar{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.jaar dl{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:0;font-size:14px}
+.jaar dt{color:var(--muted)} .jaar dd{margin:0;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere}
+.jaar ul{margin:0;padding-left:18px;font-size:14px}
+.kop{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.kies{display:flex;gap:6px;align-items:center}
+.kies button{font:500 13px var(--font-body);background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:4px 10px;cursor:pointer}
+.kies b{font-family:var(--font-display);font-size:22px;min-width:3ch;text-align:center}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.tabel{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+.tabel th{text-align:right;font-weight:600;color:var(--muted);font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tabel th:first-child,.tabel td:first-child{text-align:left}
+.tabel td{padding:5px 8px;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tabel tr{cursor:pointer} .tabel tr[aria-selected="true"] td{background:var(--soft)}
+.tabel td.t{text-align:left;white-space:normal;color:var(--muted)}
+.noot{font-size:13px;color:var(--muted);border-left:3px solid var(--line);padding-left:10px;max-width:80ch}
+details{font-size:14px} summary{cursor:pointer;color:var(--acc)}
+.rapport{display:flex;flex-direction:column;gap:28px}
+.leegstaat{border:1px dashed var(--line);border-radius:12px;padding:28px 18px;color:var(--muted);text-align:center;font-size:14px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>body{margin:0}</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>MusicMeter Jaaroverzicht</h1>
+    <p class="sub">Zet je stemmen en toevoegingen op MusicMeter om in een jaarverslag: hoeveel je per jaar en per maand stemde, je gemiddelde, je 5-sterrenalbums en wat je toevoegde. Het ophalen gebeurt in je eigen browser op musicmeter.nl; er gaat niets naar een server.</p>
+    <p class="sub" style="margin-top:6px">Dit is een onofficieel hulpmiddel van een MusicMeter-gebruiker en hoort niet bij MusicMeter.nl.</p>
+    <div class="stappen">
+      <div class="stap">
+        <h3><span>STAP 1</span>Zet de knop in je bladwijzerbalk</h3>
+        <p>Sleep deze knop naar je bladwijzerbalk (Ctrl+Shift+B toont de balk).</p>
+        <a class="bm" id="bm" href="#" draggable="true">♪ MM-jaaroverzicht</a>
+        <details><summary>Slepen lukt niet?</summary>
+          <p class="uitleg" style="margin-top:6px">Kopieer de code, maak een nieuwe bladwijzer en plak de code als adres (URL). Of open op musicmeter.nl de console (F12, tabblad Console) en plak de code daar.</p>
+          <div class="rij" style="margin-top:6px"><button type="button" class="knop" id="kopBm">Kopieer bladwijzer-adres</button><button type="button" class="knop" id="kopCon">Kopieer code voor de console</button></div>
+          <textarea id="codeVak" readonly hidden aria-label="Code"></textarea>
+        </details>
+      </div>
+      <div class="stap">
+        <h3><span>STAP 2</span>Klik erop op MusicMeter</h3>
+        <p>Ga naar je profiel op <a href="https://www.musicmeter.nl" target="_blank" rel="noopener">musicmeter.nl</a> (het adres eindigt op /user/&lt;nummer&gt;) en klik op de bladwijzer. Er verschijnt een venstertje rechtsonder. Kies of je ook genres en landen wilt en druk op Start.</p>
+        <p>Een paar duizend stemmen duren een paar minuten. Met genres en landen erbij duurt het ongeveer een seconde per toegevoegd album.</p>
+      </div>
+      <div class="stap">
+        <h3><span>STAP 3</span>Plak de gegevens hier</h3>
+        <p>Druk in het venstertje op "Kopieer gegevens" en plak ze hieronder (Ctrl+V). Een gedownload bestand kun je er ook op neerzetten.</p>
+        <textarea id="plak" placeholder="Plak hier de gegevens…" aria-label="Gegevens plakken"></textarea>
+        <div class="rij"><button type="button" class="knop vol" id="toon">Toon overzicht</button><label class="knop" for="bestand">Kies bestand</label><input type="file" id="bestand" accept=".json,application/json" hidden></div>
+        <p class="melding" id="melding" role="status"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="leegstaat" id="leeg" hidden>Hier verschijnt je jaaroverzicht zodra je in stap 3 de gegevens plakt: kerncijfers, stemmen en toevoegingen per jaar en per maand, je 5-sterrenalbums per jaar en een tabel met alle jaren.</div>
+
+  <div class="rapport" id="rapport">
+  <div class="band" id="band"></div>
+
+  <section aria-labelledby="naamKop">
+    <h1 id="naamKop" style="margin-top:0"></h1>
+    <p class="sub" id="naamSub"></p>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section>
+    <h2>Per jaar</h2>
+    <p class="uitleg">Klik op een jaar voor de details eronder. Stemmen en toevoegingen hebben elk een eigen grafiek op dezelfde jaar-as.</p>
+    <div class="paneel" style="margin-top:10px;display:flex;flex-direction:column;gap:16px">
+      <div><div class="legend"><span><i style="background:var(--acc)"></i>Stemmen per jaar</span></div><div class="scroll"><div class="cols" id="c-v"></div></div></div>
+      <div><div class="legend"><span><i style="background:var(--acc2)"></i>Toevoegingen per jaar</span></div><div class="scroll"><div class="cols" id="c-a"></div></div></div>
+      <div><div class="legend"><span id="lijnLabel"><i style="background:var(--acc)"></i>Gemiddelde stem per jaar</span></div><div class="scroll"><div class="lijn" id="c-g"></div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kop"><h2>Jaar in detail</h2>
+      <div class="kies"><button type="button" id="vorig" aria-label="Vorig jaar">←</button><b id="jr"></b><button type="button" id="volg" aria-label="Volgend jaar">→</button></div></div>
+    <div class="jaar" id="detail" style="margin-top:10px"></div>
+  </section>
+
+  <section>
+    <h2>Per maand</h2>
+    <p class="uitleg">Hoe donkerder het vakje, hoe meer activiteit in die maand. Ga met de muis over een vakje voor het aantal.</p>
+    <div class="duo" style="margin-top:10px">
+      <div class="paneel"><h3>Stemmen</h3><div class="scroll"><div class="hm" id="hm-v"></div></div><div class="schaal" id="sc-v"></div></div>
+      <div class="paneel"><h3>Toevoegingen</h3><div class="scroll"><div class="hm" id="hm-a"></div></div><div class="schaal" id="sc-a"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Alle jaren samen</h2>
+    <div class="duo" style="margin-top:10px">
+      <div class="paneel"><h3>Verdeling van de stemmen</h3><div class="hb" id="t-dist"></div></div>
+      <div class="paneel"><h3>Releasedecennium van de albums met een stem</h3><div class="hb" id="t-dec"></div></div>
+      <div class="paneel"><h3>Genres van de toevoegingen</h3><div class="hb a" id="t-gen"></div></div>
+      <div class="paneel"><h3>Landen van de toevoegingen</h3><div class="hb a" id="t-land"></div></div>
+      <div class="paneel"><h3>Toevoegingen met de meeste stemmen</h3><div class="hb a" id="t-recv"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tabel</h2>
+    <div class="paneel scroll" style="margin-top:10px"><table class="tabel"><thead><tr><th>Jaar</th><th>Stemmen</th><th>Gem.</th><th>5★</th><th>Gewijzigd</th><th>Toevoegingen</th><th>Stemmen op toevoegingen</th><th>Meest toegevoegd genre</th></tr></thead><tbody id="tb"></tbody></table></div>
+  </section>
+
+  <p class="noot" id="noot"></p>
+  </div>
+</main>
+
+<script type="application/json" id="voorbeeld">null</script>
+<script type="application/json" id="knopcode">"(()=>{\nif(!/(^|\\.)musicmeter\\.nl$/.test(location.hostname)){alert('Open eerst je profiel op musicmeter.nl en klik daar op deze bladwijzer.');return}\nif(document.getElementById('mmjo'))return;\nconst DOEL='__DOEL__';\nconst CAL='1:20031211,250:20040131,500:20040208,1000:20040209,1500:20040310,2000:20040311,2500:20040312,5000:20040317,7500:20040326,10000:20040415,12500:20040606,15000:20040901,17500:20041130,20000:20050207,22500:20050409,25000:20050529,27500:20050721,30000:20050821,32500:20051016,35000:20051124,37500:20060112,40000:20060126,42500:20060217,45000:20060317,47500:20060412,50000:20060518,52500:20060626,55000:20060822,57500:20060914,60000:20061015,62500:20061118,65000:20061227,67500:20070130,70000:20070228,72500:20070331,75000:20070426,77500:20070519,80000:20070612,82500:20070704,85000:20070803,87500:20070828,90000:20070923,92500:20071012,95000:20071029,97500:20071114,100000:20071202,102500:20071219,105000:20080103,107500:20080114,110000:20080128,112500:20080215,115000:20080307,117500:20080322,120000:20080407,122500:20080425,125000:20080514,127500:20080604,130000:20080705,132500:20080729,135000:20080824,137500:20080918,140000:20081006,142500:20081027,145000:20081117,147500:20081217,150000:20090108,152500:20090201,155000:20090221,157500:20090316,160000:20090411,162500:20090512,165000:20090608,167500:20090710,170000:20090803,172500:20090829,175000:20090925,177500:20091020,180000:20091117,182500:20091219,185000:20100119,187500:20100220,190000:20100318,192500:20100415,195000:20100523,197500:20100705,200000:20100805,202500:20100914,205000:20101026,207500:20101124,210000:20101229,212500:20110201,215000:20110306,217500:20110405,220000:20110510,222500:20110618,225000:20110731,227500:20110903,230000:20111001,232500:20111025,235000:20111124,237500:20111231,240000:20120128,242500:20120219,245000:20120306,247500:20120322,250000:20120411,252500:20120506,255000:20120526,257500:20120622,260000:20120714,262500:20120805,265000:20120827,267500:20120917,270004:20121004,272694:20121010,275007:20121016,277501:20121022,280388:20121029,282500:20121102,285000:20121108,287503:20121113,290000:20121119,292501:20121126,295097:20121205,297597:20121212,300005:20121222,302502:20121230,305194:20130107,307500:20130114,310001:20130120,312502:20130127,315000:20130203,317500:20130212,320000:20130220,322500:20130224,325194:20130302,327501:20130305,330006:20130312,333276:20130317,335000:20130322,337500:20130329,340001:20130402,342791:20130409,345970:20130416,347791:20130421,350000:20130426,352500:20130504,355000:20130510,357694:20130518,360097:20130525,362597:20130603,365006:20130611,367500:20130617,370000:20130624,372507:20130703,375582:20130716,377500:20130725,380097:20130803,382500:20130814,385097:20130826,387500:20130906,390388:20130917,392500:20130927,395097:20131009,397500:20131020,400000:20131101,402502:20131116,405004:20131201,407501:20131216,410001:20140103,412501:20140117,415000:20140127,417500:20140207,420003:20140215,422501:20140226,425006:20140310,427500:20140322,430002:20140406,432507:20140423,435007:20140507,437502:20140522,440000:20140607,442791:20140620,445000:20140705,447503:20140721,450002:20140805,452500:20140820,455006:20140828,457694:20140910,460000:20140922,462505:20141009,465000:20141027,467500:20141112,470000:20141129,472500:20141217,475194:20141230,477500:20150111,480000:20150129,482504:20150218,485097:20150309,487500:20150329,490001:20150419,492504:20150509,495002:20150529,497500:20150624,500000:20150721,502500:20150816,505000:20150903,507500:20150922,510002:20151006,513373:20151022,515000:20151103,517500:20151122,520000:20151208,522500:20151225,525000:20160109,527500:20160124,530003:20160212,532502:20160303,535001:20160322,537500:20160411,540000:20160501,542500:20160521,545097:20160608,547500:20160627,550000:20160720,552500:20160814,555003:20160904,557694:20160919,564731:20160924,565485:20160925,567597:20160927,571940:20161001,573567:20161002,575002:20161003,583373:20161012,585194:20161014,587501:20161016,590291:20161019,593276:20161022,595006:20161023,600291:20161029,602506:20161031,605485:20161104,608179:20161105,611940:20161108,612501:20161108,615001:20161110,623664:20161113,626164:20161114,630582:20161115,635388:20161116,637500:20161117,640776:20161117,642503:20161118,647506:20161119,654052:20161121,655000:20161130,657500:20161220,660000:20170107,662500:20170124,665000:20170211,667500:20170302,670000:20170319,672500:20170405,675000:20170427,677500:20170516,680000:20170603,682500:20170622,685000:20170709,687500:20170802,690000:20170821,692500:20170907,695000:20170924,697500:20171011,700000:20171030,702500:20171119,705000:20171214,707500:20180112,710000:20180206,712500:20180303,715000:20180323,717500:20180408,720000:20180427,722500:20180516,725000:20180611,727500:20180708,730000:20180803,732500:20180826,735000:20180922,737500:20181017,740000:20181111,742500:20181203,745000:20181228,747500:20190116,750000:20190211,752500:20190307,755000:20190411,757500:20190514,760000:20190613,762500:20190723,765000:20190823,767500:20190925,770000:20191028,772500:20191205,775000:20200116,777500:20200215,780000:20200317,782500:20200413,785000:20200510,787500:20200601,790000:20200630,792500:20200804,795000:20200909,797500:20201007,800000:20201029,802500:20201122,805000:20201217,807500:20210114,810000:20210207,812500:20210308,815000:20210406,817500:20210505,820000:20210530,822500:20210703,825000:20210813,827500:20210920,830000:20211026,832500:20211206,835000:20220109,837500:20220211,840000:20220322,842500:20220427,845000:20220524,847500:20220622,850000:20220725,852500:20220830,855000:20221002,857500:20221101,860000:20221207,862500:20230110,865000:20230206,867500:20230302,870000:20230401,872500:20230430,875000:20230529,877501:20230706,880000:20230808,882500:20230907,885000:20231007,887500:20231107,890000:20231210,892500:20240114,895000:20240213,897500:20240317,900000:20240424,902500:20240517,905000:20240628,907500:20240811,910000:20240921,912500:20241105,915000:20241219,917500:20250121,920000:20250220,922500:20250323,925000:20250419,927500:20250524,930000:20250701,932500:20250813,935000:20250927,937500:20251108,940000:20251223,942500:20260201,945000:20260314,947500:20260422,950000:20260605,952500:20260727,955000:20260914,957500:20261029,957600:20261030,957800:20261102,958000:20261105,958200:20261107,958400:20261111'.split(',').map(x=>{const[a,b]=x.split(':');return[+a,Date.UTC(+b.slice(0,4),+b.slice(4,6)-1,+b.slice(6,8))]});\nconst MND={januari:1,februari:2,maart:3,april:4,mei:5,juni:6,juli:7,augustus:8,september:9,oktober:10,november:11,december:12};\nconst nu=new Date(),JAAR=nu.getFullYear(),iso=d=>new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);\nconst W=ms=>new Promise(r=>setTimeout(r,ms));\nconst o=document.createElement('div');o.id='mmjo';\no.style.cssText='position:fixed;z-index:2147483647;right:16px;bottom:16px;width:min(380px,calc(100vw - 32px));background:#fff;color:#1b1f1e;border:1px solid #1f6a6f;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);font:14px/1.5 system-ui,sans-serif;padding:14px 16px';\ndocument.body.appendChild(o);\nconst B='style=\"font:600 14px system-ui;background:#1f6a6f;color:#fff;border:0;border-radius:8px;padding:7px 14px;cursor:pointer;margin:6px 6px 0 0\"';\nconst B2='style=\"font:500 14px system-ui;background:#fff;color:#1f6a6f;border:1px solid #1f6a6f;border-radius:8px;padding:6px 13px;cursor:pointer;margin:6px 6px 0 0\"';\nconst H=s=>String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));\nlet m=location.pathname.match(/\\/user\\/(\\d+)/),uid=m?m[1]:'';\nif(!uid){const a=[...document.querySelectorAll('a[href*=\"/user/\"]')].map(a=>(a.getAttribute('href').match(/\\/user\\/(\\d+)\\/votes/)||[])[1]).filter(Boolean);uid=a[0]||''}\no.innerHTML=`<b style=\"font-size:16px\">MusicMeter-jaaroverzicht<\/b><button id=\"mmjx\" style=\"float:right;border:0;background:none;font-size:18px;cursor:pointer\" aria-label=\"Sluiten\">×<\/button>\n<p style=\"margin:8px 0\">Gebruikersnummer (staat in de adresbalk achter /user/):<\/p>\n<input id=\"mmju\" value=\"${H(uid)}\" inputmode=\"numeric\" style=\"font:15px system-ui;width:120px;padding:5px 8px;border:1px solid #bbb;border-radius:6px\">\n<label style=\"display:block;margin:10px 0 0\"><input type=\"checkbox\" id=\"mmjg\"> Ook genres en landen van je toevoegingen ophalen <span style=\"color:#5d6663\">(opent elk toegevoegd album apart, ongeveer 1 seconde per album)<\/span><\/label>\n<button id=\"mmjs\" ${B}>Start<\/button><div id=\"mmjp\" style=\"margin-top:10px;color:#5d6663\"><\/div>`;\nconst $=id=>document.getElementById(id),P=t=>$('mmjp').innerHTML=t;\n$('mmjx').onclick=()=>{stop=1;o.remove()};let stop=0;\nasync function get(u){for(let k=0;k<4;k++){if(stop)throw Error('gestopt');try{const r=await fetch(u,{credentials:'include'});if(r.status==404||r.status==410)return null;if(r.ok)return new DOMParser().parseFromString(await r.text(),'text/html')}catch(e){}await W(2000*(k+1))}throw Error('Pagina niet op te halen: '+u)}\nfunction datum(t){t=(t||'').toLowerCase();if(/vandaag/.test(t))return iso(nu);if(/eergisteren/.test(t))return iso(new Date(nu-1728e5));if(/gisteren/.test(t))return iso(new Date(nu-864e5));const wd=t.match(/(zondag|maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag)/);if(wd&&!/\\d{1,2}\\s+[a-z]+/.test(t)){const w=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'].indexOf(wd[1]);let k=(nu.getDay()-w+7)%7||7;return iso(new Date(nu-k*864e5))}const m=t.match(/(\\d{1,2})\\s+([a-z]+)(?:\\s+(\\d{4}))?/);if(!m||!MND[m[2]])return null;return`${m[3]||JAAR}-${String(MND[m[2]]).padStart(2,'0')}-${m[1].padStart(2,'0')}`}\nfunction idDatum(id){let i=0;while(i<CAL.length-2&&CAL[i+1][0]<id)i++;const[a,ta]=CAL[i],[b,tb]=CAL[i+1];const t=ta+(tb-ta)*Math.max(0,(id-a)/(b-a));return iso(new Date(Math.min(t,+nu)))}\nfunction jaar(el){const m=((el.nextSibling&&el.nextSibling.textContent)||'').match(/^\\s*\\((\\d{4})\\)/);return m?+m[1]:0}\n$('mmjs').onclick=async()=>{\nuid=$('mmju').value.trim();if(!/^\\d+$/.test(uid)){P('Vul een gebruikersnummer in.');return}\nconst uitg=$('mmjg').checked;$('mmjs').disabled=true;\ntry{\nconst prof=await get('/user/'+uid+'/votes');if(!prof)throw Error('Gebruiker '+uid+' bestaat niet.');\nconst naam=(prof.title||'').split(' - ')[0].trim()||('gebruiker '+uid);\nconst VM=new Map(),AM=new Map();\nfor(const s of['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0']){\nfor(let off=0;;off+=250){P(`Stemmen ophalen: ${s.replace('.',',')} sterren… (${VM.size} tot nu toe)`);\nconst d=await get(`/user/${uid}/votes/${s}/${off}`);if(!d)break;const li=d.querySelectorAll('li.vote');const voor=VM.size;\nli.forEach(l=>{const a=l.querySelector('a[data-tooltip-album],a[href*=\"/album/\"]');if(!a)return;const id=+(a.getAttribute('href').match(/album\\/(\\d+)/)||[])[1];const sc=l.querySelector('.vote-wrapper .strong');const sv=sc?+sc.textContent.trim().replace(',','.'):+s;if(!id||VM.has(id)||!(sv>0))return;const dt=l.querySelector('.vote_date');const tx=dt?dt.textContent:'';VM.set(id,{s:sv,id,t:a.textContent.trim(),j:jaar(a),d:datum((tx.match(/geplaatst:\\s*([^,]+(?:,\\s*\\d{4})?)/)||[])[1]||''),c:/stem was/.test(tx)})});\nawait W(350);if(li.length<250||VM.size==voor)break}}\nfor(const L of'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'){\nfor(let off=0;;off+=100){P(`Toevoegingen ophalen: letter ${L==='_'?'#':L}… (${AM.size} tot nu toe)<br>${VM.size} stemmen gevonden`);\nconst d=await get(`/user/${uid}/additions/${L}/${off}`);if(!d)break;const li=d.querySelectorAll('li[data-entity-id]');const voor=AM.size;\nli.forEach(l=>{const a=l.querySelector('a[href*=\"/album/\"]');if(!a)return;const id=+l.dataset.entityId;if(!id||AM.has(id))return;const av=l.querySelector('.average');const g=av?av.textContent.match(/([\\d,]+)\\s*\\((\\d+)\\)/):null;AM.set(id,{id,t:a.textContent.trim(),j:jaar(a),avg:g?+g[1].replace(',','.'):null,n:g?+g[2]:0,d:idDatum(id),g:[],c:[]})});\nawait W(350);if(li.length<100||AM.size==voor)break}}\nconst V=[...VM.values()],A=[...AM.values()];\nif(uitg){let i=0;const q=A.slice();const wk=async()=>{while(q.length){const x=q.shift();i++;if(i%5==0)P(`Genres en landen: ${i} van ${A.length} albums…`);const d=await get('/album/'+x.id);const p=d&&d.querySelector('.details-inner p');if(p){const q2=p.cloneNode(true);q2.querySelectorAll('br').forEach(b=>b.replaceWith('\\n'));const r=q2.textContent.split('\\n').map(s=>s.trim()).filter(s=>s&&!/^label:/i.test(s));const sp=s=>s.split(' / ').map(x=>x.trim()).filter(Boolean);if(r.length>=2){x.c=sp(r[0]);x.g=sp(r[1])}else if(r.length==1){(GEN.test(sp(r[0])[0])?x.g:x.c).push(...sp(r[0]))}}await W(400)}};await Promise.all([wk(),wk()])}\nP('Overzicht berekenen…');\nconst R=som(uid,naam,V,A,uitg);const json=JSON.stringify(R);\no.innerHTML=`<b style=\"font-size:16px\">Klaar: ${H(naam)}<\/b><button id=\"mmjx\" style=\"float:right;border:0;background:none;font-size:18px;cursor:pointer\" aria-label=\"Sluiten\">×<\/button>\n<p style=\"margin:8px 0\">${V.length.toLocaleString('nl-NL')} stemmen en ${A.length.toLocaleString('nl-NL')} toevoegingen verwerkt. Kopieer de gegevens en plak ze op de overzichtspagina.<\/p>\n<textarea id=\"mmjt\" readonly style=\"width:100%;height:70px;font:11px monospace;box-sizing:border-box\">${H(json)}<\/textarea>\n<button id=\"mmjc\" ${B}>Kopieer gegevens<\/button><button id=\"mmjd\" ${B2}>Download bestand<\/button>${DOEL?`<a href=\"${DOEL}\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block;margin-top:8px;color:#1f6a6f\">Overzichtspagina openen ↗<\/a>`:''}<div id=\"mmjp\" style=\"margin-top:6px;color:#5d6663\"><\/div>`;\n$('mmjx').onclick=()=>o.remove();\n$('mmjc').onclick=async()=>{try{await navigator.clipboard.writeText(json);P('Gekopieerd. Plak het nu op de overzichtspagina.')}catch(e){$('mmjt').select();document.execCommand('copy');P('Gekopieerd (of selecteer de tekst en druk Ctrl+C).')}};\n$('mmjd').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download='musicmeter-'+naam.replace(/[^\\w-]+/g,'_')+'.json';a.click()};\n}catch(e){P('Gestopt: '+H(e.message));$('mmjs').disabled=false}};\nconst GEN=/^(Rock|Pop|Dance|Electronic|Avant-Garde|Jazz|Wereld|Folk|Punk|Hip-Hop|Score|Country|Neoklassiek|Reggae|Funk|Soul|Blues|Metal|Roots|R&B|Ska|Klassiek|Kleinkunst|Gospel|Cabaret|Comedy|Spoken Word|Musical|Kinder|Easy Listening|Schlager|Latin)/;\nfunction som(uid,naam,V,A,uitg){\nconst inc=(o,k,n=1)=>{if(k==null||k==='')return;o[k]=(o[k]||0)+n};const dec=j=>j?String(Math.floor(j/10)*10):null;\nconst top=(o,n)=>Object.fromEntries(Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n));\nconst lab=x=>x.t+(x.j?` (${x.j})`:'');const r2=x=>Math.round(x*100)/100;\nconst ys=[...V.map(v=>v.d),...A.map(a=>a.d)].filter(Boolean).map(d=>+d.slice(0,4));\nconst y0=ys.length?Math.min(...ys):JAAR,y1=Math.max(JAAR,...ys);const yrs={};\nfor(let y=y0;y<=y1;y++)yrs[y]={v:0,dist:{},chg:0,vm:Array(12).fill(0),vdec:{},a:0,am:Array(12).fill(0),g:{},c:{},adec:{},recv:0,top5:[],topAdd:null,avg:null,n5:0,_s:0};\nconst R={uid,naam,bij:iso(nu),nV:V.length,nA:A.length,avg:V.length?r2(V.reduce((a,v)=>a+v.s,0)/V.length):null,chg:V.filter(v=>v.c).length,dist:{},gen:uitg,gAll:{},cAll:{},vdecAll:{},adecAll:{},noDateV:0,noDateA:0};\nconst dag={},adag={};\nfor(const v of V){inc(R.dist,String(v.s));inc(R.vdecAll,dec(v.j));if(!v.d){R.noDateV++;continue}inc(dag,v.d);const y=yrs[+v.d.slice(0,4)];y.v++;y._s+=v.s;inc(y.dist,String(v.s));if(v.c)y.chg++;y.vm[+v.d.slice(5,7)-1]++;inc(y.vdec,dec(v.j));if(v.s==5){y.n5++;y.top5.push(lab(v))}}\nfor(const a of A){inc(R.adecAll,dec(a.j));a.g.forEach(g=>inc(R.gAll,g));a.c.forEach(c=>inc(R.cAll,c));if(!a.d){R.noDateA++;continue}inc(adag,a.d);const y=yrs[+a.d.slice(0,4)];y.a++;y.am[+a.d.slice(5,7)-1]++;a.g.forEach(g=>inc(y.g,g));a.c.forEach(c=>inc(y.c,c));inc(y.adec,dec(a.j));y.recv+=a.n;if(!y.topAdd||a.n>y.topAdd[1])y.topAdd=[lab(a),a.n,a.id]}\nfor(const k in yrs){const y=yrs[k];y.avg=y.v?r2(y._s/y.v):null;delete y._s;y.top5.sort();y.top5=y.top5.slice(0,8);y.g=top(y.g,6);y.c=top(y.c,6)}\nR.yrs=yrs;R.gAll=top(R.gAll,25);R.cAll=top(R.cAll,15);\nconst best=o=>{const e=Object.entries(o).sort((a,b)=>b[1]-a[1])[0];return e||null};R.bestDay=best(dag);R.bestADay=best(adag);\nR.topRecv=A.slice().sort((a,b)=>b.n-a.n).slice(0,10).filter(a=>a.n>0).map(a=>[lab(a),a.n,a.avg,a.d,a.id]);\nconst fv=V.filter(v=>v.d).sort((a,b)=>a.d<b.d?-1:1)[0];R.firstV=fv?[lab(fv),fv.d,fv.s]:null;\nconst fa=A.slice().sort((a,b)=>a.id-b.id)[0];R.firstA=fa?[lab(fa),fa.d,fa.id]:null;\nreturn R}\n})();\n"</script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const E = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const nl = n => Number(n).toLocaleString('nl-NL');
+  const k2 = n => n == null ? '–' : Number(n).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const MK = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const MND = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  const datum = iso => { if (!iso) return '–'; const [y, m, d] = iso.split('-'); return `${+d} ${MND[m - 1]} ${y}`; };
+  const top = o => Object.entries(o || {}).sort((a, b) => b[1] - a[1]);
+  const scoreTxt = s => { const n = Number(s); return Number.isInteger(n) ? n + ',0' : String(s).replace('.', ','); };
+  const SLEUTEL = 'mmjo-gegevens';
+
+  // ---------- bladwijzerknop
+  const HIER = /^https?:/.test(location.href) ? location.href.split('#')[0] : '';
+  const CODE = JSON.parse($('knopcode').textContent).replace('__DOEL__', HIER);
+  const BM = 'javascript:' + encodeURIComponent(CODE);
+  const bm = $('bm'); bm.href = BM;
+  bm.addEventListener('click', e => { e.preventDefault(); melding('Sleep de knop naar je bladwijzerbalk; hier klikken doet niets. Klik er daarna op als je op musicmeter.nl bent.'); });
+  bm.addEventListener('dragstart', e => { try { e.dataTransfer.setData('text/uri-list', BM); e.dataTransfer.setData('text/plain', BM); } catch (x) {} });
+  async function kopieer(tekst, wat) {
+    try { await navigator.clipboard.writeText(tekst); melding(wat + ' gekopieerd.'); }
+    catch (x) { const v = $('codeVak'); v.hidden = false; v.value = tekst; v.select(); melding('Kopiëren werd geweigerd: de tekst staat geselecteerd in het vak, druk op Ctrl+C.', true); }
+  }
+  $('kopBm').addEventListener('click', () => kopieer(BM, 'Bladwijzer-adres'));
+  $('kopCon').addEventListener('click', () => kopieer(CODE, 'Code'));
+
+  // ---------- invoer
+  function melding(t, fout) { const m = $('melding'); m.textContent = t; m.classList.toggle('fout', !!fout); }
+  function lees(tekst, bron) {
+    let d; try { d = JSON.parse(String(tekst).trim()); } catch (e) { melding('Dit is geen geldige uitvoer van de knop. Plak precies wat "Kopieer gegevens" gaf.', true); return false; }
+    if (!d || typeof d !== 'object' || !d.yrs || typeof d.nV !== 'number') { melding('Deze gegevens missen de stemmen per jaar. Haal ze opnieuw op met de knop.', true); return false; }
+    try { localStorage.setItem(SLEUTEL, JSON.stringify(d)); } catch (e) {}
+    toon(d, false); melding(`Overzicht van ${d.naam || 'gebruiker ' + d.uid} getoond${bron ? ' (' + bron + ')' : ''}.`);
+    document.getElementById('band').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return true;
+  }
+  $('toon').addEventListener('click', () => { const t = $('plak').value; if (!t.trim()) { melding('Plak eerst de gegevens in het vak.', true); return; } lees(t); });
+  $('plak').addEventListener('paste', () => setTimeout(() => { const t = $('plak').value; if (t.trim().startsWith('{')) lees(t, 'geplakt'); }, 0));
+  const bestand = f => { if (!f) return; const r = new FileReader(); r.onload = () => lees(r.result, f.name); r.readAsText(f); };
+  $('bestand').addEventListener('change', e => bestand(e.target.files[0]));
+  const pv = $('plak');
+  pv.addEventListener('dragover', e => { e.preventDefault(); pv.classList.add('drop'); });
+  pv.addEventListener('dragleave', () => pv.classList.remove('drop'));
+  pv.addEventListener('drop', e => { if (e.dataTransfer.files.length) { e.preventDefault(); pv.classList.remove('drop'); bestand(e.dataTransfer.files[0]); } });
+
+  // ---------- weergave
+  let D, JR, sel;
+  function toon(data, voorbeeld) {
+    $('rapport').hidden = !data; $('leeg').hidden = !!data;
+    if (!data) return;
+    D = data; JR = Object.keys(D.yrs).sort();
+    const naam = D.naam || ('gebruiker ' + D.uid);
+    sel = JR.reduce((a, y) => (D.yrs[y].v + D.yrs[y].a) > (D.yrs[a].v + D.yrs[a].a) ? y : a, JR[JR.length - 1]);
+    $('band').innerHTML = voorbeeld
+      ? `<span><b>Voorbeeld:</b> zo ziet het overzicht van ${E(naam)} eruit. Plak je eigen gegevens in stap 3 om het jouwe te zien.</span>`
+      : `<span>Je ziet het overzicht van <b>${E(naam)}</b>, opgehaald op ${datum(D.bij)}.</span><button type="button" class="knop" id="wis">${VB ? 'Toon weer het voorbeeld' : 'Wis dit overzicht'}</button>`;
+    const w = $('wis'); if (w) w.addEventListener('click', () => { try { localStorage.removeItem(SLEUTEL); } catch (e) {} $('plak').value = ''; melding(''); toon(VB, true); });
+    const prof = D.uid ? `https://www.musicmeter.nl/user/${encodeURIComponent(D.uid)}` : 'https://www.musicmeter.nl';
+    $('naamKop').textContent = naam + ' op MusicMeter';
+    const eerst = [D.firstV && D.firstV[1], D.firstA && D.firstA[1]].filter(Boolean).sort()[0];
+    $('naamSub').innerHTML = `Jaaroverzicht van de stemmen en toevoegingen van <a href="${prof}" target="_blank" rel="noopener">${E(naam)}</a>${D.uid ? ` (gebruiker ${E(D.uid)})` : ''}${eerst ? `, van ${datum(eerst)}` : ''} tot en met ${datum(D.bij)}.`;
+    const actief = JR.filter(y => D.yrs[y].v > 0).length;
+    const piekV = JR.reduce((a, y) => D.yrs[y].v > D.yrs[a].v ? y : a, JR[0]);
+    const piekA = JR.reduce((a, y) => D.yrs[y].a > D.yrs[a].a ? y : a, JR[0]);
+    const kpi = (b, s) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`;
+    $('kpis').innerHTML = kpi(nl(D.nV), 'stemmen') + kpi(k2(D.avg), 'gemiddelde stem') + kpi(nl(D.nA), 'toevoegingen')
+      + (D.nV ? kpi(piekV, `meeste stemmen (${nl(D.yrs[piekV].v)})`) : '') + (D.nA ? kpi(piekA, `meeste toevoegingen (${nl(D.yrs[piekA].a)})`) : '')
+      + (D.bestDay ? kpi(nl(D.bestDay[1]), `stemmen op één dag (${datum(D.bestDay[0])})`) : '') + kpi(actief, 'jaren met stemmen');
+    heat('hm-v', 'sc-v', 'vm'); heat('hm-a', 'sc-a', 'am');
+    hb('t-dist', Object.entries(D.dist || {}).sort((a, b) => b[0] - a[0]).map(([s, n]) => [scoreTxt(s) + ' ★', n]), 10);
+    hb('t-dec', Object.entries(D.vdecAll || {}).sort((a, b) => a[0] - b[0]).map(([d, n]) => [d + 's', n]), 12);
+    const geenGen = 'Niet opgehaald. Vink bij de knop "Ook genres en landen" aan om dit te zien.';
+    hb('t-gen', top(D.gAll), 12, nl, D.gen === false ? geenGen : 'Geen toevoegingen.');
+    hb('t-land', top(D.cAll), 12, nl, D.gen === false ? geenGen : 'Geen toevoegingen.');
+    hb('t-recv', (D.topRecv || []).map(r => [String(r[0]).replace(/ \(0\)$/, ''), r[1]]), 10, nl, 'Geen toevoegingen met stemmen.');
+    $('noot').innerHTML = `Bron: de pagina's <a href="${prof}/votes" target="_blank" rel="noopener">stemmen</a> en <a href="${prof}/additions" target="_blank" rel="noopener">toevoegingen</a> op MusicMeter, opgehaald op ${datum(D.bij)}. De datum van een stem is het moment waarop de huidige stem is geplaatst: past iemand een stem aan, dan verschuift die naar het jaar van de wijziging${D.chg ? ` (van de ${nl(D.nV)} stemmen zijn er ${nl(D.chg)} ooit gewijzigd)` : ''}. ${voorbeeld ? 'De toevoegdatum komt in dit voorbeeld van de statistiekenpagina van elk album.' : 'De toevoegdatum is geschat uit het albumnummer: MusicMeter nummert albums op volgorde van toevoegen, dus de maand klopt vrijwel altijd, de dag niet altijd.'} Genres, landen en stemmen op toevoegingen zijn de huidige stand op MusicMeter.${D.noDateV ? ` ${nl(D.noDateV)} stemmen zonder datum tellen wel mee in de totalen, niet in de jaren.` : ''}`;
+    render();
+  }
+
+  function cols(el, key, cls) {
+    const max = Math.max(1, ...JR.map(y => D.yrs[y][key]));
+    $(el).innerHTML = JR.map(y => { const n = D.yrs[y][key];
+      return `<button type="button" class="col ${cls} dim" data-j="${y}" aria-pressed="${y === sel}" title="${y}: ${nl(n)}" aria-label="${y}: ${nl(n)}"><u>${n ? nl(n) : ''}</u><i style="height:calc((100% - 33px) * ${(n / max).toFixed(4)})"></i><em>'${y.slice(2)}</em></button>`; }).join('');
+  }
+  function lijn() {
+    const w = 640, h = 150, p = { l: 30, r: 10, t: 14, b: 20 };
+    const av = JR.map(j => D.yrs[j].avg).filter(v => v != null);
+    let lo = av.length ? Math.floor(Math.min(...av) * 2) / 2 : 3, hi = av.length ? Math.ceil(Math.max(...av) * 2) / 2 : 4;
+    if (hi - lo < 0.5) hi = lo + 0.5;
+    $('lijnLabel').innerHTML = `<i style="background:var(--acc)"></i>Gemiddelde stem per jaar (schaal ${scoreTxt(lo.toFixed(1))} tot ${scoreTxt(hi.toFixed(1))})`;
+    const x = i => p.l + (i + 0.5) * (w - p.l - p.r) / JR.length, y = v => p.t + (hi - v) / (hi - lo) * (h - p.t - p.b);
+    const pts = JR.map((j, i) => [x(i), D.yrs[j].avg == null ? null : y(D.yrs[j].avg), j, D.yrs[j].avg]);
+    const stap = (hi - lo) > 1.5 ? 1 : 0.5;
+    let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Gemiddelde stem per jaar">`;
+    for (let v = lo; v <= hi + 1e-9; v += stap) s += `<line x1="${p.l}" x2="${w - p.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${p.l - 6}" y="${y(v) + 4}" font-size="10" text-anchor="end" fill="var(--muted)">${scoreTxt(v.toFixed(1))}</text>`;
+    let seg = [], segs = [];
+    pts.forEach(q => { if (q[1] == null) { if (seg.length) segs.push(seg); seg = []; } else seg.push(q); }); if (seg.length) segs.push(seg);
+    s += segs.map(g => `<polyline fill="none" stroke="var(--acc)" stroke-width="2" points="${g.map(q => q[0] + ',' + q[1]).join(' ')}"/>`).join('');
+    s += pts.filter(q => q[1] != null).map(q => `<circle cx="${q[0]}" cy="${q[1]}" r="${q[2] === sel ? 5 : 3.5}" fill="${q[2] === sel ? 'var(--acc)' : 'var(--card)'}" stroke="var(--acc)" stroke-width="2"><title>${q[2]}: gemiddeld ${k2(q[3])}</title></circle>`).join('');
+    s += pts.map(q => `<text x="${q[0]}" y="${h - 4}" font-size="10" text-anchor="middle" fill="var(--muted)">'${q[2].slice(2)}</text>`).join('');
+    const sp = pts.find(q => q[2] === sel && q[1] != null); if (sp) s += `<text x="${sp[0]}" y="${Math.max(10, sp[1] - 9)}" font-size="11" text-anchor="middle" fill="var(--fg)">${k2(sp[3])}</text>`;
+    $('c-g').innerHTML = s + '</svg>';
+  }
+  function heat(el, sc, key) {
+    const max = Math.max(1, ...JR.flatMap(y => D.yrs[y][key]));
+    const stap = [0, 0.1, 0.25, 0.5, 0.75];
+    const kl = n => n === 0 ? 'var(--h0)' : `var(--h${stap.filter(s => n / max > s).length})`;
+    $(el).innerHTML = '<span></span>' + MK.map(m => `<span>${m}</span>`).join('') + JR.map(y => `<span class="y">${y}</span>` + D.yrs[y][key].map((n, i) => `<div class="c" style="background:${kl(n)}" title="${MND[i]} ${y}: ${nl(n)}">${n || ''}</div>`).join('')).join('');
+    $(sc).innerHTML = 'minder' + ['var(--h0)', 'var(--h1)', 'var(--h2)', 'var(--h3)', 'var(--h4)'].map(c => `<i style="background:${c}"></i>`).join('') + `meer (max. ${nl(max)} in een maand)`;
+  }
+  function hb(el, entries, max = 12, fmt = nl, leeg = 'Geen gegevens.') {
+    const e = entries.slice(0, max), m = Math.max(1, ...e.map(x => x[1]));
+    $(el).innerHTML = e.length ? e.map(([k, v]) => `<span title="${E(k)}">${E(k)}</span><div class="bar"><i style="width:${(v / m * 100).toFixed(1)}%"></i></div><span class="w">${fmt(v)}</span>`).join('') : `<p class="leeg">${E(leeg)}</p>`;
+  }
+  function detail() {
+    const y = D.yrs[sel]; $('jr').textContent = sel;
+    const dist = Object.entries(y.dist || {}).sort((a, b) => b[0] - a[0]).map(([s, n]) => `${scoreTxt(s)}: ${n}`).join(' · ');
+    const dec = top(y.vdec).slice(0, 3).map(([d, n]) => `${d}s (${n})`).join(', ');
+    const adec = top(y.adec).slice(0, 3).map(([d, n]) => `${d}s (${n})`).join(', ');
+    const nietOp = D.gen === false ? 'niet opgehaald' : '–';
+    const vmx = Math.max(...y.vm);
+    $('detail').innerHTML = `
+      <div class="paneel"><h3>Stemmen in ${sel}</h3><dl>
+        <dt>Aantal</dt><dd>${nl(y.v)}</dd><dt>Gemiddeld</dt><dd>${k2(y.avg)}</dd>
+        <dt>Gewijzigd</dt><dd>${nl(y.chg)} (een eerdere stem aangepast)</dd>
+        <dt>Drukste maand</dt><dd>${y.v ? MND[y.vm.indexOf(vmx)] + ' (' + vmx + ')' : '–'}</dd>
+        <dt>Releasejaren</dt><dd>${dec || '–'}</dd><dt>Verdeling</dt><dd>${dist || '–'}</dd></dl></div>
+      <div class="paneel"><h3>5 sterren gegeven in ${sel} <small style="color:var(--muted);font-weight:400">${y.n5}</small></h3>${y.top5.length ? `<ul>${y.top5.map(t => `<li>${E(t)}</li>`).join('')}${y.n5 > y.top5.length ? `<li style="list-style:none;color:var(--muted)">en ${y.n5 - y.top5.length} meer</li>` : ''}</ul>` : '<p class="uitleg">Geen 5-sterrenstemmen met een datum in dit jaar.</p>'}</div>
+      <div class="paneel"><h3>Toevoegingen in ${sel}</h3><dl>
+        <dt>Aantal</dt><dd>${nl(y.a)}</dd>
+        <dt>Genres</dt><dd>${top(y.g).slice(0, 4).map(([g, n]) => `${E(g)} (${n})`).join(', ') || (y.a ? nietOp : '–')}</dd>
+        <dt>Landen</dt><dd>${top(y.c).slice(0, 4).map(([g, n]) => `${E(g)} (${n})`).join(', ') || (y.a ? nietOp : '–')}</dd>
+        <dt>Releasejaren</dt><dd>${adec || '–'}</dd>
+        <dt>Stemmen erop</dt><dd>${nl(y.recv)} in totaal</dd>
+        <dt>Populairste</dt><dd>${y.topAdd ? `<a href="https://www.musicmeter.nl/album/${encodeURIComponent(y.topAdd[2])}" target="_blank" rel="noopener">${E(y.topAdd[0])}</a>, ${nl(y.topAdd[1])} stemmen` : '–'}</dd></dl></div>`;
+  }
+  function tabel() {
+    $('tb').innerHTML = JR.map(j => { const y = D.yrs[j]; const g = top(y.g)[0];
+      return `<tr data-j="${j}" aria-selected="${j === sel}"><td><b>${j}</b></td><td>${nl(y.v)}</td><td>${y.v ? k2(y.avg) : ''}</td><td>${y.n5 || ''}</td><td>${y.chg || ''}</td><td>${y.a ? nl(y.a) : ''}</td><td>${y.recv ? nl(y.recv) : ''}</td><td class="t">${g ? E(g[0]) : ''}</td></tr>`; }).join('');
+  }
+  function render() { cols('c-v', 'v', 'v'); cols('c-a', 'a', 'a'); lijn(); detail(); tabel(); }
+  function kies(j) { if (!D.yrs[j]) return; sel = j; render(); }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-j]'); if (b) kies(b.dataset.j); });
+  $('vorig').addEventListener('click', () => kies(JR[Math.max(0, JR.indexOf(sel) - 1)]));
+  $('volg').addEventListener('click', () => kies(JR[Math.min(JR.length - 1, JR.indexOf(sel) + 1)]));
+
+  const VB = JSON.parse($('voorbeeld').textContent);
+  let eigen = null; try { eigen = JSON.parse(localStorage.getItem(SLEUTEL) || 'null'); } catch (e) {}
+  if (eigen && eigen.yrs) toon(eigen, false); else toon(VB, true);
+})();
+</script>
+
+</body>
+</html>
